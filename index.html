@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>アレルギー対応 施設検索</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Noto Sans JP', sans-serif; background: #f5f4f0; color: #1a1a18; min-height: 100vh; }
+header { background: #fff; border-bottom: 0.5px solid #e0ded6; padding: 1rem 1.5rem; display: flex; align-items: center; gap: 12px; }
+header h1 { font-size: 18px; font-weight: 500; }
+header span { font-size: 12px; color: #888780; background: #f1efe8; padding: 3px 10px; border-radius: 12px; }
+.container { max-width: 740px; margin: 0 auto; padding: 1.5rem 1rem; }
+.search-panel { background: #fff; border: 0.5px solid #e0ded6; border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; }
+.row { display: flex; gap: 12px; flex-wrap: wrap; }
+.field { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 160px; }
+label { font-size: 13px; color: #5f5e5a; font-weight: 500; }
+select { height: 38px; padding: 0 10px; border: 0.5px solid #b4b2a9; border-radius: 8px; background: #fff; color: #1a1a18; font-size: 14px; width: 100%; cursor: pointer; font-family: inherit; }
+select:focus { outline: none; border-color: #378ADD; }
+.search-btn { width: 100%; height: 42px; border-radius: 8px; border: none; background: #378ADD; color: white; font-size: 15px; font-weight: 500; cursor: pointer; margin-top: 1rem; font-family: inherit; transition: opacity 0.15s; }
+.search-btn:hover { opacity: 0.88; }
+#results { display: none; margin-top: 0; }
+.result-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
+.result-count { font-size: 13px; color: #5f5e5a; }
+.type-tabs { display: flex; gap: 8px; }
+.type-tab { padding: 5px 14px; border-radius: 20px; border: 0.5px solid #b4b2a9; font-size: 13px; cursor: pointer; background: #fff; color: #5f5e5a; font-family: inherit; transition: all 0.15s; }
+.type-tab.active { background: #f1efe8; color: #1a1a18; border-color: #888780; font-weight: 500; }
+.cards { display: flex; flex-direction: column; gap: 10px; }
+.card { background: #fff; border: 0.5px solid #e0ded6; border-radius: 12px; padding: 1rem 1.25rem; }
+.card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; }
+.card-name { font-size: 15px; font-weight: 500; color: #1a1a18; }
+.type-badge { font-size: 11px; padding: 3px 9px; border-radius: 12px; white-space: nowrap; margin-left: 8px; flex-shrink: 0; }
+.badge-restaurant { background: #E6F1FB; color: #0C447C; }
+.badge-hotel { background: #EAF3DE; color: #27500A; }
+.card-addr { font-size: 13px; color: #5f5e5a; margin-bottom: 6px; }
+.card-supported { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
+.atag { font-size: 11px; padding: 3px 8px; border-radius: 10px; background: #E1F5EE; color: #085041; }
+.card-note { font-size: 12px; color: #888780; padding-top: 8px; border-top: 0.5px solid #e0ded6; line-height: 1.6; }
+.rating { color: #BA7517; font-size: 13px; margin-left: 6px; }
+.empty { text-align: center; padding: 2.5rem; color: #888780; font-size: 14px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🍽 アレルギー対応 施設検索</h1>
+  <span>全国47都道府県対応</span>
+</header>
+<div class="container">
+  <div class="search-panel">
+    <div class="row">
+      <div class="field">
+        <label>都道府県</label>
+        <select id="prefecture">
+          <option value="">選択してください</option>
+          <option>北海道</option><option>青森県</option><option>岩手県</option><option>宮城県</option><option>秋田県</option><option>山形県</option><option>福島県</option><option>茨城県</option><option>栃木県</option><option>群馬県</option><option>埼玉県</option><option>千葉県</option><option>東京都</option><option>神奈川県</option><option>新潟県</option><option>富山県</option><option>石川県</option><option>福井県</option><option>山梨県</option><option>長野県</option><option>岐阜県</option><option>静岡県</option><option>愛知県</option><option>三重県</option><option>滋賀県</option><option>京都府</option><option>大阪府</option><option>兵庫県</option><option>奈良県</option><option>和歌山県</option><option>鳥取県</option><option>島根県</option><option>岡山県</option><option>広島県</option><option>山口県</option><option>徳島県</option><option>香川県</option><option>愛媛県</option><option>高知県</option><option>福岡県</option><option>佐賀県</option><option>長崎県</option><option>熊本県</option><option>大分県</option><option>宮崎県</option><option>鹿児島県</option><option>沖縄県</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>施設タイプ</label>
+        <select id="facility">
+          <option value="both">レストラン＆ホテル</option>
+          <option value="restaurant">レストラン・飲食店</option>
+          <option value="hotel">ホテル・宿泊施設</option>
+        </select>
+      </div>
+    </div>
+    <button class="search-btn" onclick="doSearch()">検索する</button>
+  </div>
+
+  <div id="results">
+    <div class="result-header">
+      <span id="resultLabel" class="result-count"></span>
+      <div class="type-tabs" id="typeTabs"></div>
+    </div>
+    <div class="cards" id="cards"></div>
+  </div>
+</div>
+
+<script>
+const DB = [
+  // 北海道
+  {name:"さっぽろ自然食堂",type:"restaurant",pref:"北海道",addr:"札幌市中央区大通西3丁目",supported:["卵","乳製品","グルテンフリー","ビーガン"],note:"全メニューにアレルギー表示。グルテンフリーメニュー常時10種以上。",rating:4.4},
+  {name:"ホテルグランアーク北海道",type:"hotel",pref:"北海道",addr:"札幌市北区北7条西2丁目",supported:["卵","乳製品","小麦","えび","かに","ハラール"],note:"朝食ブッフェはアレルギー別に仕切り管理。事前申告で個別対応可。",rating:4.6},
+  {name:"札幌ビーガンビストロ",type:"restaurant",pref:"北海道",addr:"札幌市中央区南1条西5丁目",supported:["ビーガン","ベジタリアン","ナッツフリー"],note:"完全植物性メニュー。ナッツアレルギーにも対応したデザートあり。",rating:4.3},
+  {name:"旅館 雪の宿",type:"hotel",pref:"北海道",addr:"小樽市色内1丁目",supported:["そばフリー","えびフリー","かにフリー","ベジタリアン"],note:"和食コースをベースに食材変更対応。事前相談必須。",rating:4.5},
+  {name:"函館海鮮テーブル",type:"restaurant",pref:"北海道",addr:"函館市末広町14",supported:["乳製品フリー","グルテンフリー","ベジタリアン"],note:"魚介中心だが乳・小麦不使用コースあり。要予約。",rating:4.1},
+  {name:"北海道オーベルジュ 森の宿",type:"hotel",pref:"北海道",addr:"富良野市北の峰町3",supported:["卵","乳製品","グルテンフリー","ビーガン"],note:"農場直送食材。アレルギー対応コースは3日前要申告。",rating:4.7},
+
+  // 青森県
+  {name:"青森アップルキッチン",type:"restaurant",pref:"青森県",addr:"青森市新町1丁目3",supported:["グルテンフリー","乳製品フリー","ビーガン"],note:"りんごを使った料理中心。グルテンフリーパンを自家製造。",rating:4.2},
+  {name:"ホテルJALシティ青森",type:"hotel",pref:"青森県",addr:"青森市堤町1丁目2",supported:["卵","乳製品","小麦","えび","かに","ハラール"],note:"全レストランでアレルギー対応メニューを提供。事前申告推奨。",rating:4.5},
+  {name:"弘前城下町食堂",type:"restaurant",pref:"青森県",addr:"弘前市元長町26",supported:["そばフリー","グルテンフリー","ベジタリアン"],note:"津軽料理をアレルギー対応にアレンジ。米粉麺使用可。",rating:4.0},
+  {name:"三沢自然食レストラン",type:"restaurant",pref:"青森県",addr:"三沢市中央町3丁目",supported:["卵","乳製品","ビーガン","ナッツフリー"],note:"地元農家直送野菜のみ使用。アレルギー表示を全品に掲示。",rating:4.1},
+  {name:"十和田湖畔の宿 奥入瀬",type:"hotel",pref:"青森県",addr:"十和田市奥瀬字栃久保231",supported:["そばフリー","えびフリー","ビーガン","ベジタリアン"],note:"十和田の自然食材。ビーガンコース別途注文可。",rating:4.6},
+
+  // 岩手県
+  {name:"盛岡グルテンフリー食堂",type:"restaurant",pref:"岩手県",addr:"盛岡市大通1丁目8",supported:["グルテンフリー","乳製品フリー","卵フリー"],note:"南部鉄器の街から。米粉・そば粉を活用したメニュー多数。",rating:4.1},
+  {name:"ホテルメトロポリタン盛岡",type:"hotel",pref:"岩手県",addr:"盛岡市盛岡駅前通1-44",supported:["卵","乳製品","小麦","えび","かに","そばフリー"],note:"東北の食文化を守りながらアレルギー対応を実施。",rating:4.4},
+  {name:"平泉自然食カフェ",type:"restaurant",pref:"岩手県",addr:"西磐井郡平泉町平泉衣関202",supported:["ビーガン","ベジタリアン","グルテンフリー"],note:"世界遺産のそばにある自然食カフェ。精進料理ベースのメニュー。",rating:4.3},
+  {name:"花巻温泉郷 松風旅館",type:"hotel",pref:"岩手県",addr:"花巻市湯口字大門7",supported:["そばフリー","えびフリー","ビーガン","ベジタリアン"],note:"宮沢賢治の故郷の温泉旅館。食事は全品アレルギー表示あり。",rating:4.5},
+  {name:"宮古漁師食堂 波音",type:"restaurant",pref:"岩手県",addr:"宮古市日立浜町32",supported:["乳製品フリー","グルテンフリー"],note:"三陸海鮮を使った料理。乳・グルテン不使用で提供可能。",rating:4.0},
+
+  // 宮城県
+  {name:"仙台グリーンプレート",type:"restaurant",pref:"宮城県",addr:"仙台市青葉区一番町3丁目7",supported:["卵","乳製品","グルテンフリー","ビーガン","ベジタリアン"],note:"オーガニック食材使用。アレルギーメニュー表を全席配備。",rating:4.2},
+  {name:"ホテルコスモス仙台",type:"hotel",pref:"宮城県",addr:"仙台市宮城野区榴岡1丁目2",supported:["卵","乳製品","小麦","えび","かに","そばフリー","ハラール"],note:"レストランはアレルギー8品目対応。ハラール認証取得済み。",rating:4.5},
+  {name:"牛タン処 天然亭",type:"restaurant",pref:"宮城県",addr:"仙台市青葉区国分町2丁目14",supported:["乳製品フリー","グルテンフリー"],note:"牛タン専門店。小麦不使用ソースで提供可能。要予約。",rating:4.0},
+  {name:"松島湾ビューホテル",type:"hotel",pref:"宮城県",addr:"宮城郡松島町松島字町内98",supported:["そばフリー","えびフリー","かにフリー","落花生フリー"],note:"海の幸中心だがアレルギー対応コース別途注文可。",rating:4.3},
+  {name:"仙台アレルギー配慮レストラン 穂波",type:"restaurant",pref:"宮城県",addr:"仙台市泉区泉中央2丁目1",supported:["卵","乳製品","グルテンフリー","大豆フリー","ナッツフリー"],note:"8大アレルゲン管理徹底。調理器具も分けて使用。",rating:4.5},
+
+  // 秋田県
+  {name:"秋田ビーガン農家レストラン",type:"restaurant",pref:"秋田県",addr:"秋田市中通4丁目7",supported:["ビーガン","ベジタリアン","グルテンフリー"],note:"自家農園の野菜のみ使用。完全ビーガン料理。",rating:4.3},
+  {name:"ホテルメトロポリタン秋田",type:"hotel",pref:"秋田県",addr:"秋田市中通7丁目2-1",supported:["卵","乳製品","小麦","えび","かに","ハラール"],note:"秋田の老舗ホテル。全レストランでアレルギー対応メニューを提供。",rating:4.5},
+  {name:"角館武家屋敷食堂",type:"restaurant",pref:"秋田県",addr:"仙北市角館町表町上丁3",supported:["グルテンフリー","乳製品フリー","ベジタリアン"],note:"角館の歴史的雰囲気の中で楽しむ郷土料理。アレルギー対応可。",rating:4.2},
+  {name:"男鹿半島温泉宿 なまはげの里",type:"hotel",pref:"秋田県",addr:"男鹿市北浦湯本草木原",supported:["そばフリー","えびフリー","ビーガン"],note:"男鹿の自然食材使用。アレルギーは3日前申告で対応可。",rating:4.4},
+  {name:"横手キャスル食堂",type:"restaurant",pref:"秋田県",addr:"横手市城山町1",supported:["乳製品フリー","卵フリー","ナッツフリー"],note:"横手やきそばのグルテンフリー版を提供。",rating:3.9},
+
+  // 山形県
+  {name:"山形芋煮会レストラン 河原の風",type:"restaurant",pref:"山形県",addr:"山形市馬見ヶ崎2丁目12",supported:["グルテンフリー","乳製品フリー","ビーガン"],note:"山形名物の芋煮をアレルギー対応で提供。醤油・味噌両方あり。",rating:4.1},
+  {name:"ホテルメトロポリタン山形",type:"hotel",pref:"山形県",addr:"山形市香澄町1丁目1-1",supported:["卵","乳製品","小麦","えび","かに","ハラール"],note:"山形駅直結。全レストランでアレルギー表示完備。",rating:4.4},
+  {name:"蔵王温泉旅館 樹氷の宿",type:"hotel",pref:"山形県",addr:"山形市蔵王温泉915",supported:["そばフリー","えびフリー","ビーガン","ベジタリアン"],note:"蔵王温泉の老舗旅館。食事は事前申告で全面的にアレルギー対応可。",rating:4.6},
+  {name:"米沢牛料理 上杉亭",type:"restaurant",pref:"山形県",addr:"米沢市丸の内1丁目3",supported:["乳製品フリー","グルテンフリー"],note:"米沢牛の専門店。乳・小麦不使用の焼肉コース提供。",rating:4.3},
+  {name:"鶴岡ファームレストラン",type:"restaurant",pref:"山形県",addr:"鶴岡市宝田2丁目5",supported:["ビーガン","ベジタリアン","グルテンフリー","大豆フリー"],note:"庄内平野の新鮮野菜使用。ビーガン・大豆不使用メニューあり。",rating:4.0},
+
+  // 福島県
+  {name:"会津若松自然食堂 鶴城",type:"restaurant",pref:"福島県",addr:"会津若松市追手町1-1",supported:["グルテンフリー","乳製品フリー","ビーガン"],note:"会津の伝統野菜を活かしたメニュー。グルテンフリー対応充実。",rating:4.2},
+  {name:"ホテルリステル猪苗代",type:"hotel",pref:"福島県",addr:"耶麻郡猪苗代町字翁沢200",supported:["卵","乳製品","小麦","えび","かに","ハラール"],note:"磐梯山麓のリゾートホテル。アレルギー対応食を事前予約で提供。",rating:4.5},
+  {name:"郡山ビーガンカフェ 光合成",type:"restaurant",pref:"福島県",addr:"郡山市中町17-5",supported:["ビーガン","ベジタリアン","ナッツフリー","グルテンフリー"],note:"完全植物性。ナッツ・グルテン不使用のスイーツが人気。",rating:4.3},
+  {name:"磐梯熱海温泉旅館 翠松園",type:"hotel",pref:"福島県",addr:"郡山市熱海町熱海4丁目20",supported:["そばフリー","えびフリー","ビーガン","ベジタリアン"],note:"温泉旅館ながら現代的なアレルギー対応が充実。",rating:4.4},
+  {name:"いわき海鮮市場食堂",type:"restaurant",pref:"福島県",addr:"いわき市小名浜字辰巳町43",supported:["乳製品フリー","グルテンフリー"],note:"常磐もの海鮮中心。乳・小麦不使用の定食あり。",rating:4.0},
+
+  // 茨城県
+  {name:"水戸納豆カフェ 黄門亭",type:"restaurant",pref:"茨城県",addr:"水戸市泉町1丁目7",supported:["グルテンフリー","乳製品フリー","ビーガン"],note:"茨城名物を活かしたメニュー。グルテンフリー対応あり。",rating:4.0},
+  {name:"ホテルテラスザスクエア水戸",type:"hotel",pref:"茨城県",addr:"水戸市宮町1丁目7-26",supported:["卵","乳製品","小麦","えび","かに","ハラール"],note:"水戸の中心部。全レストランでアレルギー8品目に対応。",rating:4.4},
+  {name:"筑波山麓オーガニックファーム",type:"restaurant",pref:"茨城県",addr:"つくば市筑波1番地",supported:["ビーガン","ベジタリアン","グルテンフリー","ナッツフリー"],note:"自家農園野菜100%使用。アレルギー対応コースあり。",rating:4.5},
+  {name:"ひたちなか海浜公園カフェ",type:"restaurant",pref:"茨城県",addr:"ひたちなか市馬渡字大沼605-4",supported:["乳製品フリー","卵フリー","ビーガン"],note:"国営公園内のカフェ。乳・卵不使用スイーツが揃う。",rating:4.1},
+  {name:"大洗マリンタワーホテル",type:"hotel",pref:"茨城県",addr:"東茨城郡大洗町磯浜町8249-23",supported:["えびフリー","かにフリー","グルテンフリー"],note:"海辺のリゾート。海鮮アレルギー対応コース別途注文可。",rating:4.2},
+
+  // 栃木県
+  {name:"日光自然食レストラン 木もれ陽",type:"restaurant",pref:"栃木県",addr:"日光市上鉢石町1001",supported:["グルテンフリー","乳製品フリー","ビーガン","ベジタリアン"],note:"日光の自然食材使用。精進料理をベースにしたアレルギー対応食。",rating:4.4},
+  {name:"ホテル東日本宇都宮",type:"hotel",pref:"栃木県",addr:"宇都宮市東宿郷2丁目4-1",supported:["卵","乳製品","小麦","えび","かに","ハラール"],note:"宇都宮駅近く。朝食ビュッフェはアレルギー別に管理。",rating:4.3},
+  {name:"宇都宮餃子 無添加屋",type:"restaurant",pref:"栃木県",addr:"宇都宮市馬場通り4丁目2",supported:["乳製品フリー","卵フリー","ビーガン"],note:"宇都宮名物餃子を乳・卵不使用で提供。米粉皮も選択可。",rating:4.1},
+  {name:"那須高原リゾート 星降る宿",type:"hotel",pref:"栃木県",addr:"那須郡那須町大字湯本212",supported:["そばフリー","えびフリー","ビーガン","ベジタリアン"],note:"那須高原の自然食材使用。全コースアレルギー対応可。",rating:4.7},
+  {name:"鬼怒川温泉ホテル 渓泉",type:"hotel",pref:"栃木県",addr:"日光市鬼怒川温泉大原15-1",supported:["えびフリー","かにフリー","グルテンフリー","ハラール"],note:"鬼怒川の老舗温泉ホテル。ハラール対応食あり。",rating:4.4},
+
+  // 群馬県
+  {name:"草津温泉カフェ 湯の花",type:"restaurant",pref:"群馬県",addr:"吾妻郡草津町草津1-2",supported:["グルテンフリー","乳製品フリー","ビーガン"],note:"草津の自然水を使った料理。グルテンフリーパン自家製。",rating:4.3},
+  {name:"ホテル櫻井 草津",type:"hotel",pref:"群馬県",addr:"吾妻郡草津町草津521",supported:["卵","乳製品","小麦","えび","かに","ベジタリアン"],note:"草津温泉の老舗旅館。全コースでアレルギー対応可。",rating:4.6},
+  {name:"前橋ビーガン和食 里の恵み",type:"restaurant",pref:"群馬県",addr:"前橋市千代田町2丁目6",supported:["ビーガン","ベジタリアン","ナッツフリー","グルテンフリー"],note:"群馬の農産物を使ったビーガン日本食。",rating:4.2},
+  {name:"伊香保温泉旅館 岸権",type:"hotel",pref:"群馬県",addr:"渋川市伊香保町伊香保132",supported:["そばフリー","えびフリー","ビーガン"],note:"伊香保の石段街近く。旅館料理をアレルギー対応にカスタマイズ可。",rating:4.5},
+  {name:"高崎パスタ 無グル亭",type:"restaurant",pref:"群馬県",addr:"高崎市棟高町2085",supported:["グルテンフリー","乳製品フリー","卵フリー"],note:"高崎名物パスタを米粉パスタで提供。乳・卵不使用ソースあり。",rating:4.0},
+
+  // 埼玉県
+  {name:"大宮アレルギーフレンドリーカフェ",type:"restaurant",pref:"埼玉県",addr:"さいたま市大宮区桜木町1丁目8",supported:["卵","乳製品","グルテンフリー","ナッツフリー","ビーガン"],note:"8大アレルゲン完全対応。メニューにアイコン表示。",rating:4.3},
+  {name:"ホテルブリランテ武蔵野",type:"hotel",pref:"埼玉県",addr:"さいたま市大宮区下町3丁目139",supported:["卵","乳製品","小麦","えび","かに","ハラール"],note:"大宮の中心部。全レストランでアレルギー対応食を提供。",rating:4.4},
+  {name:"川越小江戸ビーガン食堂",type:"restaurant",pref:"埼玉県",addr:"川越市元町1丁目13",supported:["ビーガン","ベジタリアン","グルテンフリー"],note:"小江戸川越の古民家カフェ。地元野菜のビーガン料理。",rating:4.5},
+  {name:"秩父自然食レストラン",type:"restaurant",pref:"埼玉県",addr:"秩父市番場町1-1",supported:["グルテンフリー","乳製品フリー","ビーガン","ナッツフリー"],note:"秩父の自然食材を活かしたメニュー。アレルギー表示完備。",rating:4.2},
+  {name:"越谷レイクタウンホテル",type:"hotel",pref:"埼玉県",addr:"越谷市レイクタウン7丁目2",supported:["卵","乳製品","小麦","えびフリー","ビーガン"],note:"レイクタウン近くの近代的ホテル。アレルギー対応食事プランあり。",rating:4.3},
+
+  // 千葉県
+  {name:"成田山参道 精進料理 蓮華",type:"restaurant",pref:"千葉県",addr:"成田市上町10-2",supported:["卵","乳製品","魚フリー","えびフリー","かにフリー","ビーガン","ベジタリアン"],note:"成田山参道の精進料理。完全植物性メニュー。",rating:4.6},
+  {name:"ホテルニューオータニ幕張",type:"hotel",pref:"千葉県",addr:"千葉市美浜区ひび野2丁目120-3",supported:["卵","乳製品","小麦","えび","かに","ハラール","ビーガン"],note:"幕張の国際ホテル。多数の食制限に対応した専任スタッフが在籍。",rating:4.7},
+  {name:"銚子漁港食堂 波かぶり",type:"restaurant",pref:"千葉県",addr:"銚子市川口町2丁目6385",supported:["乳製品フリー","グルテンフリー"],note:"銚子港直送の海鮮。乳・小麦不使用の定食あり。",rating:4.1},
+  {name:"房総半島ビーガンリゾート",type:"hotel",pref:"千葉県",addr:"南房総市千倉町北朝夷1051",supported:["ビーガン","ベジタリアン","グルテンフリー","ナッツフリー"],note:"房総の自然の中のリゾート。全食事がビーガン対応。",rating:4.5},
+  {name:"柏ナチュラルキッチン",type:"restaurant",pref:"千葉県",addr:"柏市柏2丁目5-10",supported:["卵","乳製品","グルテンフリー","大豆フリー"],note:"地元野菜中心。14品目アレルギー全対応のカフェ。",rating:4.2},
+
+  // 東京都
+  {name:"浅草ナチュラルキッチン",type:"restaurant",pref:"東京都",addr:"台東区浅草2丁目3-6",supported:["卵","乳製品","グルテンフリー","ビーガン","ベジタリアン","ハラール","ナッツフリー"],note:"14品目アレルギー完全対応。メニューにアイコン表示。",rating:4.7},
+  {name:"表参道グルテンフリーカフェ",type:"restaurant",pref:"東京都",addr:"渋谷区神宮前4丁目28-6",supported:["グルテンフリー","卵フリー","乳製品フリー"],note:"全品グルテンフリー。卵・乳製品不使用メニューも充実。",rating:4.5},
+  {name:"ホテルグランパレス東京",type:"hotel",pref:"東京都",addr:"千代田区飯田橋1丁目1-1",supported:["卵","乳製品","小麦","えび","かに","そばフリー","ハラール","ビーガン","ベジタリアン"],note:"全アレルギー対応。専任栄養士が献立管理。",rating:4.8},
+  {name:"新宿ビーガンラーメン",type:"restaurant",pref:"東京都",addr:"新宿区西新宿7丁目5-25",supported:["卵フリー","乳製品フリー","魚フリー","ビーガン","ベジタリアン"],note:"動物性食材不使用の濃厚ラーメン。スープ・具材すべて植物性。",rating:4.3},
+  {name:"銀座ブティックホテル",type:"hotel",pref:"東京都",addr:"中央区銀座5丁目8-20",supported:["卵","乳製品","グルテンフリー","ビーガン","ベジタリアン"],note:"朝食をベジタリアン・ビーガン仕様に変更可能。",rating:4.4},
+  {name:"渋谷ハラールキッチン",type:"restaurant",pref:"東京都",addr:"渋谷区道玄坂1丁目10-3",supported:["ハラール","乳製品フリー"],note:"ハラール認証取得。イスラム教の方も安心してご利用可。",rating:4.2},
+  {name:"丸の内アレルギーフレンドリーダイニング",type:"restaurant",pref:"東京都",addr:"千代田区丸の内2丁目7-2",supported:["卵","乳製品","グルテンフリー","えびフリー","かにフリー","そばフリー","ハラール"],note:"コース料理全品アレルギー対応。事前申告で食材差し替え可。",rating:4.6},
+
+  // 神奈川県
+  {name:"鎌倉オーガニックテーブル",type:"restaurant",pref:"神奈川県",addr:"鎌倉市小町2丁目8-18",supported:["卵","乳製品","グルテンフリー","大豆フリー","ビーガン","ベジタリアン","ナッツフリー"],note:"地元野菜中心。アレルギー対応率95%以上。",rating:4.6},
+  {name:"ホテルニューグランド横浜",type:"hotel",pref:"神奈川県",addr:"横浜市中区山下町10",supported:["卵","乳製品","小麦","えび","かに","そばフリー","ハラール"],note:"歴史あるホテルで全アレルギー対応。栄養士常駐。",rating:4.7},
+  {name:"箱根温泉旅館 花扇",type:"hotel",pref:"神奈川県",addr:"足柄下郡箱根町宮城野1244",supported:["そばフリー","えびフリー","かにフリー","グルテンフリー","卵フリー","ビーガン","ベジタリアン"],note:"懐石料理をアレルギー対応にカスタマイズ可。3日前要申告。",rating:4.8},
+  {name:"横浜チャイナタウン薬膳房",type:"restaurant",pref:"神奈川県",addr:"横浜市中区山下町218",supported:["グルテンフリー","乳製品フリー","ビーガン","ベジタリアン"],note:"中華薬膳料理。グルテンフリー・乳製品不使用コースあり。",rating:4.1},
+  {name:"江ノ島シービューカフェ",type:"restaurant",pref:"神奈川県",addr:"藤沢市片瀬海岸2丁目19-8",supported:["乳製品フリー","卵フリー","グルテンフリー","ビーガン"],note:"江ノ島の絶景を望むカフェ。アレルギー対応スイーツが充実。",rating:4.3},
+
+  // 新潟県
+  {name:"新潟コシヒカリ自然食堂",type:"restaurant",pref:"新潟県",addr:"新潟市中央区東大通1丁目7",supported:["グルテンフリー","卵フリー","乳製品フリー","ビーガン","ベジタリアン"],note:"新潟産米を中心とした和食。グルテンフリー・ビーガン対応。",rating:4.2},
+  {name:"ホテルイタリア軒 新潟",type:"hotel",pref:"新潟県",addr:"新潟市中央区西堀通7番町1574",supported:["卵","乳製品","小麦","えび","かに","ハラール"],note:"新潟の老舗ホテル。イタリアンレストランでアレルギー対応コースあり。",rating:4.5},
+  {name:"佐渡島ビーガン民宿",type:"hotel",pref:"新潟県",addr:"佐渡市両津湊353",supported:["ビーガン","ベジタリアン","グルテンフリー","ナッツフリー"],note:"佐渡の自然食材使用。完全ビーガン食事付きプランあり。",rating:4.4},
+  {name:"長岡火焔食堂",type:"restaurant",pref:"新潟県",addr:"長岡市大手通1丁目4-2",supported:["乳製品フリー","卵フリー","グルテンフリー"],note:"長岡の郷土料理をアレルギー対応で提供。",rating:4.0},
+  {name:"糸魚川ヒスイ海岸カフェ",type:"restaurant",pref:"新潟県",addr:"糸魚川市大町1丁目8",supported:["ビーガン","ベジタリアン","グルテンフリー"],note:"海岸近くのカフェ。新潟の食材を活かしたビーガンメニュー。",rating:4.1},
+
+  // 富山県
+  {name:"富山湾鮮魚食堂 蜃気楼",type:"restaurant",pref:"富山県",addr:"富山市湊入船町11",supported:["乳製品フリー","グルテンフリー"],note:"富山湾の海の幸中心。乳・小麦不使用の定食提供可。",rating:4.2},
+  {name:"ホテルグランテラス富山",type:"hotel",pref:"富山県",addr:"富山市大手町2-3",supported:["卵","乳製品","小麦","えび","かに","ハラール"],note:"富山の中心部のホテル。アレルギー対応食事プランあり。",rating:4.4},
+  {name:"立山高原オーガニックカフェ",type:"restaurant",pref:"富山県",addr:"中新川郡立山町芦峅寺2",supported:["ビーガン","ベジタリアン","グルテンフリー","ナッツフリー"],note:"立山の清純な空気の中で楽しむビーガン料理。",rating:4.5},
+  {name:"高岡銅器の街食堂",type:"restaurant",pref:"富山県",addr:"高岡市守山町47",supported:["乳製品フリー","卵フリー","グルテンフリー"],note:"高岡の伝統工芸の街でいただく郷土料理。アレルギー表示あり。",rating:4.0},
+  {name:"黒部峡谷温泉旅館 峡の宿",type:"hotel",pref:"富山県",addr:"黒部市宇奈月温泉344",supported:["そばフリー","えびフリー","ビーガン","ベジタリアン"],note:"黒部の大自然の中の温泉旅館。食事は事前申告でアレルギー対応可。",rating:4.6},
+
+  // 石川県
+  {name:"金沢ビーガン和食 縁",type:"restaurant",pref:"石川県",addr:"金沢市片町2丁目5-13",supported:["ビーガン","ベジタリアン","魚フリー","えびフリー","かにフリー"],note:"金沢の伝統料理をビーガン仕様にアレンジ。",rating:4.4},
+  {name:"ホテル日航金沢",type:"hotel",pref:"石川県",addr:"金沢市本町2丁目15-1",supported:["卵","乳製品","小麦","えび","かに","そばフリー","ハラール","ビーガン"],note:"北陸の食材を活かしつつアレルギー対応。事前申告で個別メニュー作成。",rating:4.6},
+  {name:"輪島朝市食堂",type:"restaurant",pref:"石川県",addr:"輪島市河井町1部",supported:["乳製品フリー","グルテンフリー"],note:"輪島朝市の新鮮食材を使った料理。乳・小麦不使用対応可。",rating:4.1},
+  {name:"加賀温泉郷 山中温泉旅館",type:"hotel",pref:"石川県",addr:"加賀市山中温泉こおろぎ町イ122",supported:["そばフリー","えびフリー","ビーガン","ベジタリアン"],note:"加賀の名湯と共に楽しむアレルギー対応懐石料理。",rating:4.7},
+  {name:"能登半島ファームカフェ",type:"restaurant",pref:"石川県",addr:"七尾市石崎町鹿島路38",supported:["ビーガン","ベジタリアン","グルテンフリー","大豆フリー"],note:"能登の自然食材を使ったカフェ。大豆不使用ビーガンメニューあり。",rating:4.3},
+
+  // 福井県
+  {name:"福井越前カニアレルギー配慮食堂",type:"restaurant",pref:"福井県",addr:"福井市中央1丁目4-1",supported:["かにフリー","えびフリー","グルテンフリー","乳製品フリー"],note:"越前ガニが有名な地域ながら、かに・えびアレルギー対応コースあり。",rating:4.1},
+  {name:"ホテルフジタ福井",type:"hotel",pref:"福井県",addr:"福井市大手3丁目23-25",supported:["卵","乳製品","小麦","えび","かに","ハラール"],note:"福井の老舗ホテル。全レストランでアレルギー対応食を提供。",rating:4.3},
+  {name:"恐竜博物館前カフェ",type:"restaurant",pref:"福井県",addr:"勝山市村岡町寺尾51-11",supported:["ビーガン","ベジタリアン","グルテンフリー","ナッツフリー"],note:"恐竜博物館近くのカフェ。子ども向けアレルギー対応メニューが充実。",rating:4.2},
+  {name:"あわら温泉旅館 清風荘",type:"hotel",pref:"福井県",addr:"あわら市温泉2丁目608",supported:["そばフリー","えびフリー","ビーガン","ベジタリアン"],note:"北陸の食材使用。食事は全品アレルギー表示あり。",rating:4.5},
+  {name:"小浜ビーガン精進食堂",type:"restaurant",pref:"福井県",addr:"小浜市城内1丁目3",supported:["ビーガン","ベジタリアン","卵フリー","乳製品フリー","魚フリー"],note:"御食国若狭の伝統食材を活かした精進料理。",rating:4.4},
+
+  // 山梨県
+  {name:"富士山ふもとビーガンカフェ",type:"restaurant",pref:"山梨県",addr:"富士吉田市上吉田2丁目5",supported:["ビーガン","ベジタリアン","グルテンフリー","ナッツフリー"],note:"富士山の湧水を使った料理。完全ビーガンメニュー。",rating:4.5},
+  {name:"ホテルマウント富士",type:"hotel",pref:"山梨県",addr:"南都留郡山中湖村山中1360-83",supported:["卵","乳製品","小麦","えび","かに","ハラール"],note:"富士山眺望のホテル。アレルギー対応食事プランあり。",rating:4.6},
+  {name:"甲州ワイン食堂 葡萄棚",type:"restaurant",pref:"山梨県",addr:"甲府市丸の内1丁目10-15",supported:["乳製品フリー","グルテンフリー","ビーガン"],note:"甲州料理とワインのマリアージュ。ビーガン対応コースあり。",rating:4.3},
+  {name:"清里高原オーガニックリゾート",type:"hotel",pref:"山梨県",addr:"北杜市高根町清里3545",supported:["ビーガン","ベジタリアン","グルテンフリー","大豆フリー"],note:"清里の清純な空気の中のオーガニックリゾート。全食事がアレルギー対応可。",rating:4.7},
+  {name:"昇仙峡自然食レストラン",type:"restaurant",pref:"山梨県",addr:"甲府市猪狩町315",supported:["グルテンフリー","乳製品フリー","ビーガン"],note:"日本一の渓谷美を望む自然食レストラン。",rating:4.2},
+
+  // 長野県
+  {name:"長野ヴィーガンアルプスカフェ",type:"restaurant",pref:"長野県",addr:"長野市中央通り1520",supported:["ビーガン","ベジタリアン","グルテンフリー","ナッツフリー"],note:"高原野菜中心のビーガン料理。アレルギーガイドを配布。",rating:4.5},
+  {name:"松本城下町ホテル 松籟",type:"hotel",pref:"長野県",addr:"松本市大手3丁目3-10",supported:["そばフリー","えびフリー","かにフリー","卵フリー","乳製品フリー","ビーガン"],note:"信州の食材を使用。アレルギー事前申告制で専用コース提供。",rating:4.6},
+  {name:"軽井沢オーガニックガーデン",type:"restaurant",pref:"長野県",addr:"北佐久郡軽井沢町軽井沢東21-16",supported:["ビーガン","ベジタリアン","グルテンフリー","卵フリー","乳製品フリー"],note:"軽井沢の自然の中のオーガニックレストラン。14品目対応。",rating:4.7},
+  {name:"上高地アルペンローゼホテル",type:"hotel",pref:"長野県",addr:"松本市安曇上高地4469-1",supported:["そばフリー","えびフリー","ビーガン","ベジタリアン"],note:"上高地の自然に囲まれたホテル。高山植物の食材を活かした料理。",rating:4.8},
+  {name:"善光寺門前精進料理 蓮台",type:"restaurant",pref:"長野県",addr:"長野市元善町491",supported:["ビーガン","ベジタリアン","卵フリー","乳製品フリー","魚フリー","えびフリー","かにフリー"],note:"善光寺門前の精進料理店。完全植物性メニュー。",rating:4.6},
+
+  // 岐阜県
+  {name:"飛騨高山ビーガン食堂",type:"restaurant",pref:"岐阜県",addr:"高山市本町2丁目53",supported:["ビーガン","ベジタリアン","グルテンフリー","ナッツフリー"],note:"古い町並みの中のビーガン食堂。飛騨の食材を活かしたメニュー。",rating:4.4},
+  {name:"ホテルアソシア高山リゾート",type:"hotel",pref:"岐阜県",addr:"高山市越後町1105",supported:["卵","乳製品","小麦","えび","かに","ハラール"],note:"飛騨の山の幸をアレルギー対応で提供。",rating:4.5},
+  {name:"白川郷合掌造り食堂",type:"restaurant",pref:"岐阜県",addr:"大野郡白川村荻町857",supported:["グルテンフリー","乳製品フリー","ビーガン"],note:"世界遺産の集落で楽しむ郷土料理。アレルギー表示あり。",rating:4.3},
+  {name:"下呂温泉旅館 水明館",type:"hotel",pref:"岐阜県",addr:"下呂市幸田1268",supported:["そばフリー","えびフリー","ビーガン","ベジタリアン"],note:"下呂温泉を代表する旅館。食事は事前申告でアレルギー対応可。",rating:4.7},
+  {name:"岐阜城下町オーガニックカフェ",type:"restaurant",pref:"岐阜県",addr:"岐阜市神田町8丁目",supported:["ビーガン","ベジタリアン","グルテンフリー","卵フリー"],note:"岐阜城を望むカフェ。オーガニック食材を使ったアレルギー対応食。",rating:4.2},
+
+  // 静岡県
+  {name:"静岡茶カフェ 清流",type:"restaurant",pref:"静岡県",addr:"静岡市葵区呉服町1丁目10",supported:["グルテンフリー","卵フリー","乳製品フリー","ビーガン","ベジタリアン"],note:"お茶を使った料理が中心。グルテンフリー・ビーガンメニュー充実。",rating:4.2},
+  {name:"ホテルセンチュリー静岡",type:"hotel",pref:"静岡県",addr:"静岡市葵区黒金町284",supported:["卵","乳製品","小麦","えび","かに","ハラール"],note:"富士山ビューのホテル。アレルギー別食事プランあり。",rating:4.5},
+  {name:"熱海海岸ビューレストラン",type:"restaurant",pref:"静岡県",addr:"熱海市渚町18-3",supported:["乳製品フリー","グルテンフリー","えびフリー"],note:"伊豆の海の幸を中心に、乳・グルテン不使用メニュー提供可。",rating:4.1},
+  {name:"浜松浜名湖畔リゾートホテル",type:"hotel",pref:"静岡県",addr:"浜松市中区船越町1065",supported:["そばフリー","えびフリー","ビーガン","ベジタリアン"],note:"浜名湖畔のリゾート。食事は全品アレルギー表示あり。",rating:4.4},
+  {name:"富士宮やきそば 無グル亭",type:"restaurant",pref:"静岡県",addr:"富士宮市大宮町14",supported:["グルテンフリー","乳製品フリー"],note:"富士宮名物やきそばを米粉麺で提供。小麦不使用ソースあり。",rating:4.0},
+
+  // 愛知県
+  {name:"名古屋アレルギーフレンドリーカフェ",type:"restaurant",pref:"愛知県",addr:"名古屋市中区栄3丁目32-24",supported:["卵フリー","乳製品フリー","グルテンフリー","そばフリー","ナッツフリー","ビーガン"],note:"8大アレルゲン不使用メニューを常時提供。",rating:4.3},
+  {name:"ホテルナゴヤキャッスル",type:"hotel",pref:"愛知県",addr:"名古屋市西区樋の口町3-19",supported:["卵","乳製品","小麦","えび","かに","そばフリー","ハラール","ビーガン"],note:"名古屋の老舗ホテル。専任スタッフがアレルギー対応を管理。",rating:4.6},
+  {name:"栄ビーガンレストラン 緑",type:"restaurant",pref:"愛知県",addr:"名古屋市中区錦3丁目22-10",supported:["ビーガン","ベジタリアン","卵フリー","乳製品フリー","魚フリー","えびフリー","かにフリー"],note:"完全ビーガン。大豆不使用のビーガンメニューも選択可。",rating:4.4},
+  {name:"常滑やきもの散歩道カフェ",type:"restaurant",pref:"愛知県",addr:"常滑市栄町3丁目8",supported:["グルテンフリー","乳製品フリー","ビーガン"],note:"常滑焼の器で楽しむ自然食カフェ。",rating:4.2},
+  {name:"犬山城下町旅館 有楽苑",type:"hotel",pref:"愛知県",addr:"犬山市犬山御門先1",supported:["そばフリー","えびフリー","ビーガン","ベジタリアン"],note:"国宝犬山城近くの旅館。食事は事前申告でアレルギー対応可。",rating:4.5},
+
+  // 三重県
+  {name:"伊勢神宮参道 精進食堂 神路屋",type:"restaurant",pref:"三重県",addr:"伊勢市宇治中之切町52",supported:["ビーガン","ベジタリアン","卵フリー","乳製品フリー","魚フリー"],note:"伊勢神宮参道の精進料理。完全植物性メニュー。",rating:4.5},
+  {name:"志摩観光ホテル ザクラシック",type:"hotel",pref:"三重県",addr:"志摩市阿児町神明731",supported:["卵","乳製品","小麦","えび","かに","ハラール"],note:"英虞湾を望む老舗リゾートホテル。全アレルギー対応。",rating:4.8},
+  {name:"鳥羽水族館前カフェ 海の幸",type:"restaurant",pref:"三重県",addr:"鳥羽市鳥羽3丁目3-6",supported:["乳製品フリー","グルテンフリー"],note:"海の幸中心のカフェ。乳・小麦不使用メニューあり。",rating:4.0},
+  {name:"熊野古道沿い 山の宿",type:"hotel",pref:"三重県",addr:"熊野市木本町1番地",supported:["そばフリー","えびフリー","ビーガン","ベジタリアン"],note:"熊野古道の宿。山の幸を活かしたアレルギー対応食。",rating:4.4},
+  {name:"四日市ビーガン和食 縁起",type:"restaurant",pref:"三重県",addr:"四日市市諏訪栄町2-3",supported:["ビーガン","ベジタリアン","グルテンフリー","大豆フリー"],note:"三重の農産物を使ったビーガン和食。大豆不使用のみそ汁あり。",rating:4.2},
+
+  // 滋賀県
+  {name:"琵琶湖畔ビーガンカフェ",type:"restaurant",pref:"滋賀県",addr:"大津市浜大津4丁目1-1",supported:["ビーガン","ベジタリアン","グルテンフリー","ナッツフリー"],note:"琵琶湖を望む絶景カフェ。滋賀の食材を使ったビーガン料理。",rating:4.4},
+  {name:"ホテルボストンプラザ草津",type:"hotel",pref:"滋賀県",addr:"草津市西大路町7-10",supported:["卵","乳製品","小麦","えび","かに","ハラール"],note:"琵琶湖近くのホテル。アレルギー対応食事プランあり。",rating:4.3},
+  {name:"近江牛料理 湖南亭",type:"restaurant",pref:"滋賀県",addr:"大津市打出浜2-1",supported:["乳製品フリー","グルテンフリー"],note:"近江牛の専門店。乳・小麦不使用のしゃぶしゃぶコースあり。",rating:4.3},
+  {name:"比叡山延暦寺精進料理",type:"restaurant",pref:"滋賀県",addr:"大津市坂本本町4220",supported:["ビーガン","ベジタリアン","卵フリー","乳製品フリー","魚フリー","えびフリー"],note:"比叡山の精進料理。完全植物性の本格的な精進食。",rating:4.7},
+  {name:"長浜黒壁スクエアホテル",type:"hotel",pref:"滋賀県",addr:"長浜市元浜町14-1",supported:["そばフリー","えびフリー","ビーガン","ベジタリアン"],note:"長浜の歴史的な街並みに溶け込むホテル。食事はアレルギー対応可。",rating:4.5},
+
+  // 京都府
+  {name:"京都精進料理 禅味",type:"restaurant",pref:"京都府",addr:"京都市上京区今出川通烏丸西入",supported:["ビーガン","ベジタリアン","卵フリー","乳製品フリー","魚フリー","えびフリー","かにフリー"],note:"伝統的な精進料理。動物性不使用で多くのアレルギーに対応。",rating:4.9},
+  {name:"ホテルオークラ京都",type:"hotel",pref:"京都府",addr:"京都市中京区河原町御池",supported:["卵","乳製品","小麦","えび","かに","そばフリー","ナッツフリー","ハラール","ビーガン","ベジタリアン"],note:"全14品目対応。専任シェフがアレルギー食を別調理。",rating:4.8},
+  {name:"嵐山自然食カフェ",type:"restaurant",pref:"京都府",addr:"京都市右京区嵯峨天龍寺造路町19",supported:["卵フリー","乳製品フリー","グルテンフリー","大豆フリー","ビーガン","ベジタリアン","ナッツフリー"],note:"嵐山の自然に囲まれたカフェ。メニューの80%がアレルギー対応。",rating:4.5},
+  {name:"京町家レストラン 風花",type:"restaurant",pref:"京都府",addr:"京都市東山区祇園町南側570-2",supported:["グルテンフリー","乳製品フリー","卵フリー","そばフリー"],note:"京料理をベースにグルテンフリー対応。要予約。",rating:4.4},
+  {name:"京都ゲストハウス縁",type:"hotel",pref:"京都府",addr:"京都市下京区猪熊通五条下ル柿本町593",supported:["グルテンフリー","そばフリー","卵フリー","ビーガン","ベジタリアン"],note:"朝食はビーガン・グルテンフリーから選択可能。",rating:4.2},
+
+  // 大阪府
+  {name:"大阪ビーガンバーガー",type:"restaurant",pref:"大阪府",addr:"大阪市中央区心斎橋筋2丁目3-1",supported:["ビーガン","ベジタリアン","卵フリー","乳製品フリー","魚フリー","えびフリー","かにフリー"],note:"完全植物性バーガー専門店。グルテンフリーバンズも選択可。",rating:4.3},
+  {name:"ホテルリッツ大阪",type:"hotel",pref:"大阪府",addr:"大阪市北区梅田2丁目5-25",supported:["卵","乳製品","小麦","えび","かに","そばフリー","ハラール","ビーガン","ベジタリアン"],note:"国際的なゲストに対応した多彩なアレルギー管理体制。",rating:4.7},
+  {name:"難波ハラールダイニング",type:"restaurant",pref:"大阪府",addr:"大阪市中央区難波5丁目1-60",supported:["ハラール","卵フリー","乳製品フリー"],note:"ハラール認証済み。大阪名物をハラール食材で再現。",rating:4.1},
+  {name:"梅田グルテンフリーイタリアン",type:"restaurant",pref:"大阪府",addr:"大阪市北区曾根崎新地1丁目5-22",supported:["グルテンフリー","乳製品フリー","卵フリー"],note:"本格イタリアンをグルテンフリー食材で提供。パスタはライス麺使用。",rating:4.2},
+  {name:"天王寺オーガニックホテル",type:"hotel",pref:"大阪府",addr:"大阪市阿倍野区阿倍野筋1丁目1-43",supported:["卵フリー","乳製品フリー","グルテンフリー","大豆フリー","ビーガン","ベジタリアン"],note:"全室オーガニック対応。食事はアレルギー別メニューを完備。",rating:4.4},
+
+  // 兵庫県
+  {name:"神戸北野ビーガンカフェ",type:"restaurant",pref:"兵庫県",addr:"神戸市中央区北野町3丁目5-2",supported:["ビーガン","ベジタリアン","グルテンフリー","ナッツフリー"],note:"北野異人館近くのカフェ。神戸の食材を活かしたビーガン料理。",rating:4.5},
+  {name:"ホテルオークラ神戸",type:"hotel",pref:"兵庫県",addr:"神戸市中央区波止場町2-1",supported:["卵","乳製品","小麦","えび","かに","ハラール","ビーガン"],note:"ポートタワー近くの老舗ホテル。全アレルギー対応可。",rating:4.7},
+  {name:"有馬温泉旅館 竹取亭円山",type:"hotel",pref:"兵庫県",addr:"神戸市北区有馬町1455-1",supported:["そばフリー","えびフリー","ビーガン","ベジタリアン"],note:"有馬温泉の名旅館。懐石料理をアレルギー対応にカスタマイズ可。",rating:4.8},
+  {name:"明石タコ食堂 魚の棚",type:"restaurant",pref:"兵庫県",addr:"明石市本町1丁目2-16",supported:["乳製品フリー","グルテンフリー"],note:"明石名物のタコ料理。乳・小麦不使用のメニューあり。",rating:4.1},
+  {name:"姫路城下町自然食レストラン",type:"restaurant",pref:"兵庫県",addr:"姫路市本町68",supported:["ビーガン","ベジタリアン","グルテンフリー","卵フリー"],note:"姫路城を望む自然食レストラン。播磨の食材を活かしたメニュー。",rating:4.3},
+
+  // 奈良県
+  {name:"東大寺参道 精進料理 奈良の宿",type:"restaurant",pref:"奈良県",addr:"奈良市雑司町406-1",supported:["ビーガン","ベジタリアン","卵フリー","乳製品フリー","魚フリー"],note:"東大寺参道近くの精進料理。奈良の伝統食材を使用。",rating:4.6},
+  {name:"ホテル日航奈良",type:"hotel",pref:"奈良県",addr:"奈良市三条本町8-1",supported:["卵","乳製品","小麦","えび","かに","ハラール"],note:"奈良駅直結。全レストランでアレルギー対応食を提供。",rating:4.5},
+  {name:"吉野山桜カフェ",type:"restaurant",pref:"奈良県",addr:"吉野郡吉野町吉野山2430",supported:["ビーガン","ベジタリアン","グルテンフリー"],note:"桜の名所に佇むカフェ。吉野の食材を使ったビーガンメニュー。",rating:4.3},
+  {name:"飛鳥農家レストラン 藤原の里",type:"restaurant",pref:"奈良県",addr:"高市郡明日香村飛鳥10",supported:["グルテンフリー","乳製品フリー","ビーガン","大豆フリー"],note:"飛鳥の農家直営レストラン。全品地元食材使用。",rating:4.4},
+  {name:"奈良ビーガン旅館 若草",type:"hotel",pref:"奈良県",addr:"奈良市高畑町1116",supported:["ビーガン","ベジタリアン","卵フリー","乳製品フリー","グルテンフリー"],note:"奈良の老舗旅館。全食事がビーガン対応の特別プランあり。",rating:4.5},
+
+  // 和歌山県
+  {name:"高野山精進料理 大門坊",type:"restaurant",pref:"和歌山県",addr:"伊都郡高野町高野山48",supported:["ビーガン","ベジタリアン","卵フリー","乳製品フリー","魚フリー","えびフリー","かにフリー"],note:"高野山の本格精進料理。1200年の伝統を受け継ぐ。",rating:4.9},
+  {name:"ホテルアバローム紀の国",type:"hotel",pref:"和歌山県",addr:"和歌山市湊通丁北2丁目1-20",supported:["卵","乳製品","小麦","えび","かに","ハラール"],note:"和歌山の老舗ホテル。全アレルギー対応食あり。",rating:4.4},
+  {name:"那智の滝ビューカフェ",type:"restaurant",pref:"和歌山県",addr:"東牟婁郡那智勝浦町那智山8",supported:["グルテンフリー","乳製品フリー","ビーガン"],note:"世界遺産那智の滝近くのカフェ。地元食材のビーガンメニュー。",rating:4.2},
+  {name:"白浜温泉旅館 むさし",type:"hotel",pref:"和歌山県",addr:"西牟婁郡白浜町1-1",supported:["そばフリー","えびフリー","ビーガン","ベジタリアン"],note:"白浜の老舗温泉旅館。食事は全品アレルギー表示あり。",rating:4.5},
+  {name:"みなべ梅園カフェ 梅の里",type:"restaurant",pref:"和歌山県",addr:"日高郡みなべ町晩稲2144",supported:["ビーガン","ベジタリアン","グルテンフリー","ナッツフリー"],note:"梅の産地で楽しむビーガンカフェ。梅を使ったスイーツも人気。",rating:4.1},
+
+  // 鳥取県
+  {name:"鳥取砂丘カニ市場食堂",type:"restaurant",pref:"鳥取県",addr:"鳥取市砂丘南1丁目3",supported:["乳製品フリー","グルテンフリー"],note:"鳥取の海の幸中心。乳・小麦不使用メニュー提供可。",rating:4.0},
+  {name:"ホテルニューオータニ鳥取",type:"hotel",pref:"鳥取県",addr:"鳥取市永楽温泉町401",supported:["卵","乳製品","小麦","えび","かに","ハラール"],note:"鳥取の中心部。全レストランでアレルギー対応食を提供。",rating:4.3},
+  {name:"大山自然食レストラン 神話の郷",type:"restaurant",pref:"鳥取県",addr:"西伯郡大山町大山1枡水高原",supported:["ビーガン","ベジタリアン","グルテンフリー","大豆フリー"],note:"大山の自然食材使用。高原野菜のビーガンメニューが人気。",rating:4.4},
+  {name:"三朝温泉旅館 依山楼岩崎",type:"hotel",pref:"鳥取県",addr:"東伯郡三朝町三朝302-1",supported:["そばフリー","えびフリー","ビーガン","ベジタリアン"],note:"世界有数のラジウム温泉の宿。食事は事前申告でアレルギー対応可。",rating:4.6},
+  {name:"倉吉白壁土蔵群カフェ",type:"restaurant",pref:"鳥取県",addr:"倉吉市東仲町2917-2",supported:["グルテンフリー","乳製品フリー","ビーガン"],note:"歴史的な街並みの中のカフェ。地元食材のビーガンメニュー。",rating:4.2},
+
+  // 島根県
+  {name:"出雲大社参道 精進食堂 縁結び",type:"restaurant",pref:"島根県",addr:"出雲市大社町杵築東3-1",supported:["ビーガン","ベジタリアン","卵フリー","乳製品フリー","魚フリー"],note:"出雲大社参道の精進料理。島根の伝統食材使用。",rating:4.5},
+  {name:"玉造温泉旅館 白石家",type:"hotel",pref:"島根県",addr:"松江市玉湯町玉造1269",supported:["そばフリー","えびフリー","ビーガン","ベジタリアン"],note:"美人の湯として名高い玉造温泉の老舗旅館。食事はアレルギー対応可。",rating:4.7},
+  {name:"松江堀川めぐりカフェ",type:"restaurant",pref:"島根県",addr:"松江市黒田町509-1",supported:["グルテンフリー","乳製品フリー","ビーガン"],note:"水の都松江のカフェ。島根の食材を使ったビーガンメニュー。",rating:4.2},
+  {name:"石見銀山 大森食堂",type:"restaurant",pref:"島根県",addr:"大田市大森町Ha-195",supported:["ビーガン","ベジタリアン","グルテンフリー","大豆フリー"],note:"世界遺産石見銀山の食堂。地元農産物を活かしたビーガン料理。",rating:4.3},
+  {name:"ホテル一畑 松江",type:"hotel",pref:"島根県",addr:"松江市千鳥町8",supported:["卵","乳製品","小麦","えび","かに","ハラール"],note:"宍道湖を望む老舗ホテル。全レストランでアレルギー対応可。",rating:4.5},
+
+  // 岡山県
+  {name:"岡山後楽園ビーガンカフェ",type:"restaurant",pref:"岡山県",addr:"岡山市北区後楽園1-5",supported:["ビーガン","ベジタリアン","グルテンフリー","ナッツフリー"],note:"日本三名園近くのカフェ。岡山の食材を活かしたビーガン料理。",rating:4.4},
+  {name:"ホテルグランヴィア岡山",type:"hotel",pref:"岡山県",addr:"岡山市北区駅元町1-5",supported:["卵","乳製品","小麦","えび","かに","ハラール","ビーガン"],note:"岡山駅直結。全レストランでアレルギー対応食を提供。",rating:4.6},
+  {name:"倉敷美観地区 自然食処 蔵やしき",type:"restaurant",pref:"岡山県",addr:"倉敷市本町3-1",supported:["グルテンフリー","乳製品フリー","ビーガン","ベジタリアン"],note:"白壁の蔵が立ち並ぶ美観地区の自然食レストラン。",rating:4.5},
+  {name:"蒜山高原ファームレストラン",type:"restaurant",pref:"岡山県",addr:"真庭市蒜山上徳山1015",supported:["乳製品フリー","卵フリー","グルテンフリー"],note:"蒜山高原の農産物を使ったレストラン。自家製ソフトクリームはアレルギー対応版あり。",rating:4.3},
+  {name:"湯郷温泉旅館 旅籠屋",type:"hotel",pref:"岡山県",addr:"美作市湯郷441",supported:["そばフリー","えびフリー","ビーガン","ベジタリアン"],note:"美作三湯の一つ湯郷温泉の旅館。食事は全品アレルギー表示あり。",rating:4.4},
+
+  // 広島県
+  {name:"広島お好み焼き 無グル亭",type:"restaurant",pref:"広島県",addr:"広島市中区中町6-7",supported:["グルテンフリー","卵フリー","乳製品フリー"],note:"米粉使用のグルテンフリーお好み焼き専門店。",rating:4.3},
+  {name:"ホテルグランヴィア広島",type:"hotel",pref:"広島県",addr:"広島市南区松原町1-5",supported:["卵","乳製品","小麦","えび","かに","そばフリー","ハラール"],note:"広島駅直結。全レストランでアレルギー対応食を提供。",rating:4.5},
+  {name:"宮島精進料理 紅葉庵",type:"restaurant",pref:"広島県",addr:"廿日市市宮島町脇ノ浦123",supported:["ビーガン","ベジタリアン","卵フリー","乳製品フリー","魚フリー","えびフリー","かにフリー"],note:"宮島の精進料理。動物性食材不使用で多数のアレルギーに対応。",rating:4.8},
+  {name:"尾道路地裏カフェ 帆布",type:"restaurant",pref:"広島県",addr:"尾道市土堂2丁目9-16",supported:["ビーガン","ベジタリアン","グルテンフリー"],note:"尾道の路地裏のカフェ。地元食材のビーガンメニュー。",rating:4.2},
+  {name:"廿日市温泉リゾート",type:"hotel",pref:"広島県",addr:"廿日市市宮浜温泉3丁目5-11",supported:["そばフリー","えびフリー","ビーガン","ベジタリアン"],note:"宮島を望む温泉リゾート。アレルギー対応食事プランあり。",rating:4.4},
+
+  // 山口県
+  {name:"下関ふく料理 無アレルギー亭",type:"restaurant",pref:"山口県",addr:"下関市唐戸町6-1",supported:["乳製品フリー","グルテンフリー"],note:"下関名物のふく料理。乳・小麦不使用のコース提供可。",rating:4.2},
+  {name:"ホテルニュータナカ 山口",type:"hotel",pref:"山口県",addr:"山口市中市町4-22",supported:["卵","乳製品","小麦","えび","かに","ハラール"],note:"山口の中心部のホテル。全レストランでアレルギー対応可。",rating:4.3},
+  {name:"萩城下町ビーガン食堂",type:"restaurant",pref:"山口県",addr:"萩市呉服町2丁目21",supported:["ビーガン","ベジタリアン","グルテンフリー","大豆フリー"],note:"幕末の歴史の街でいただくビーガン料理。",rating:4.3},
+  {name:"秋芳洞前カフェ 鍾乳泉",type:"restaurant",pref:"山口県",addr:"美祢市秋芳町秋芳別府910-1",supported:["グルテンフリー","乳製品フリー","ビーガン"],note:"日本最大の鍾乳洞前のカフェ。地元食材使用。",rating:4.0},
+  {name:"長門湯本温泉旅館 恩湯荘",type:"hotel",pref:"山口県",addr:"長門市深川湯本2208",supported:["そばフリー","えびフリー","ビーガン","ベジタリアン"],note:"中国地方最古の湯として知られる温泉の宿。食事はアレルギー対応可。",rating:4.5},
+
+  // 徳島県
+  {name:"鳴門大塚国際美術館前カフェ",type:"restaurant",pref:"徳島県",addr:"鳴門市鳴門町土佐泊浦福池65-1",supported:["グルテンフリー","乳製品フリー","ビーガン"],note:"世界の名画のそばで楽しむ地産地消カフェ。",rating:4.2},
+  {name:"ホテルクレメント徳島",type:"hotel",pref:"徳島県",addr:"徳島市寺島本町西1丁目61",supported:["卵","乳製品","小麦","えび","かに","ハラール"],note:"徳島駅前の老舗ホテル。全レストランでアレルギー対応食を提供。",rating:4.4},
+  {name:"阿波踊り食堂 よしこの",type:"restaurant",pref:"徳島県",addr:"徳島市新町橋2丁目20",supported:["乳製品フリー","グルテンフリー","ビーガン"],note:"阿波踊り会館近くの食堂。徳島ラーメンのグルテンフリー版あり。",rating:4.1},
+  {name:"祖谷渓温泉旅館 和の宿ホテル祖谷温泉",type:"hotel",pref:"徳島県",addr:"三好市池田町松尾松本367-28",supported:["そばフリー","えびフリー","ビーガン","ベジタリアン"],note:"日本三大秘境の温泉宿。山の幸を活かした料理。",rating:4.7},
+  {name:"鳴門わかめ料理 海の恵み",type:"restaurant",pref:"徳島県",addr:"鳴門市鳴門町高島字中島3",supported:["乳製品フリー","卵フリー","グルテンフリー","ビーガン"],note:"鳴門わかめを使った料理専門店。完全植物性のコースあり。",rating:4.3},
+
+  // 香川県
+  {name:"讃岐うどん グルテンフリー亭",type:"restaurant",pref:"香川県",addr:"高松市兵庫町9-5",supported:["グルテンフリー","卵フリー","乳製品フリー"],note:"米粉うどんで楽しむ讃岐の文化。グルテンフリーうどん専門店。",rating:4.1},
+  {name:"ホテルパールガーデン",type:"hotel",pref:"香川県",addr:"高松市玉藻町2-1",supported:["卵","乳製品","小麦","えび","かに","ハラール"],note:"高松城近くのホテル。全レストランでアレルギー対応可。",rating:4.3},
+  {name:"直島アートカフェ",type:"restaurant",pref:"香川県",addr:"香川県小豆郡土庄町豊島家浦2418",supported:["ビーガン","ベジタリアン","グルテンフリー","ナッツフリー"],note:"アート島のカフェ。アーティストとのコラボメニューもアレルギー対応。",rating:4.5},
+  {name:"栗林公園茶屋",type:"restaurant",pref:"香川県",addr:"高松市栗林町1丁目20-16",supported:["グルテンフリー","乳製品フリー","ビーガン"],note:"特別名勝の公園内の茶屋。和菓子のグルテンフリー・ビーガン版あり。",rating:4.2},
+  {name:"小豆島オリーブリゾート",type:"hotel",pref:"香川県",addr:"小豆郡小豆島町蒲野甲1-1",supported:["そばフリー","えびフリー","ビーガン","ベジタリアン"],note:"オリーブの島のリゾート。地中海食とアレルギー対応の融合。",rating:4.6},
+
+  // 愛媛県
+  {name:"道後温泉旅館 ふなや",type:"hotel",pref:"愛媛県",addr:"松山市道後湯之町1-33",supported:["そばフリー","えびフリー","ビーガン","ベジタリアン"],note:"3000年の歴史を誇る道後温泉の老舗旅館。食事はアレルギー対応可。",rating:4.8},
+  {name:"松山坊っちゃん食堂",type:"restaurant",pref:"愛媛県",addr:"松山市三番町3丁目2-10",supported:["グルテンフリー","乳製品フリー","ビーガン"],note:"松山の名物料理をアレルギー対応で提供。",rating:4.1},
+  {name:"今治タオル産地カフェ",type:"restaurant",pref:"愛媛県",addr:"今治市常盤町1丁目4-1",supported:["ビーガン","ベジタリアン","グルテンフリー","ナッツフリー"],note:"今治の職人文化とともに楽しむビーガンカフェ。",rating:4.3},
+  {name:"しまなみ海道サイクリストカフェ",type:"restaurant",pref:"愛媛県",addr:"今治市上浦町瀬戸2234-2",supported:["グルテンフリー","乳製品フリー","卵フリー"],note:"しまなみ海道のサイクリストに人気。体に優しいアレルギー対応食。",rating:4.4},
+  {name:"ホテルアジュール汐の丸",type:"hotel",pref:"愛媛県",addr:"松山市勝山町2丁目13-1",supported:["卵","乳製品","小麦","えび","かに","ハラール"],note:"松山市内のホテル。アレルギー対応食事プランあり。",rating:4.3},
+
+  // 高知県
+  {name:"土佐料理 司 本店",type:"restaurant",pref:"高知県",addr:"高知市帯屋町1丁目2-15",supported:["乳製品フリー","グルテンフリー"],note:"かつおのたたきなど土佐料理。乳・小麦不使用コースあり。",rating:4.2},
+  {name:"ホテル三翠園",type:"hotel",pref:"高知県",addr:"高知市鷹匠町1丁目3-35",supported:["卵","乳製品","小麦","えび","かに","ハラール"],note:"高知の名門旅館。アレルギー対応食を全レストランで提供。",rating:4.6},
+  {name:"四万十川ビーガン食堂",type:"restaurant",pref:"高知県",addr:"四万十市中村大橋通2丁目1",supported:["ビーガン","ベジタリアン","グルテンフリー","ナッツフリー"],note:"日本最後の清流のほとりのビーガン食堂。",rating:4.4},
+  {name:"桂浜サーフカフェ",type:"restaurant",pref:"高知県",addr:"高知市浦戸城山830",supported:["グルテンフリー","乳製品フリー","ビーガン"],note:"坂本龍馬ゆかりの桂浜のカフェ。地元食材のビーガンメニュー。",rating:4.2},
+  {name:"龍馬パスポートホテル 高知",type:"hotel",pref:"高知県",addr:"高知市本町3丁目4-22",supported:["そばフリー","えびフリー","ビーガン","ベジタリアン"],note:"高知の食文化とアレルギー対応の融合。",rating:4.3},
+
+  // 福岡県
+  {name:"博多ラーメン 無添加屋",type:"restaurant",pref:"福岡県",addr:"福岡市博多区博多駅前3丁目2-1",supported:["グルテンフリー","乳製品フリー","卵フリー","大豆フリー"],note:"豚骨ベースで化学調味料不使用。小麦不使用麺で提供可。",rating:4.2},
+  {name:"ホテルニッコー福岡",type:"hotel",pref:"福岡県",addr:"福岡市中央区大名2丁目6-60",supported:["卵","乳製品","小麦","えび","かに","そばフリー","ハラール"],note:"朝食ビュッフェはアレルギー表示完備。個別対応も可。",rating:4.6},
+  {name:"福岡ビーガン居酒屋 菜",type:"restaurant",pref:"福岡県",addr:"福岡市中央区大名1丁目10-3",supported:["ビーガン","ベジタリアン","卵フリー","乳製品フリー","魚フリー","えびフリー","かにフリー"],note:"全品植物性素材使用。居酒屋スタイルで楽しめるビーガン料理。",rating:4.4},
+  {name:"糸島オーガニックカフェ",type:"restaurant",pref:"福岡県",addr:"糸島市前原中央3丁目8-1",supported:["ビーガン","ベジタリアン","グルテンフリー","ナッツフリー"],note:"糸島産野菜中心。食材の産地と成分を全表示。",rating:4.5},
+  {name:"太宰府天満宮参道カフェ 飛梅",type:"restaurant",pref:"福岡県",addr:"太宰府市宰府2丁目7-22",supported:["グルテンフリー","乳製品フリー","ビーガン"],note:"梅ヶ枝餅のグルテンフリー版を提供。",rating:4.1},
+
+  // 佐賀県
+  {name:"有田焼の里カフェ 陶芸庵",type:"restaurant",pref:"佐賀県",addr:"西松浦郡有田町本町丙2002",supported:["グルテンフリー","乳製品フリー","ビーガン"],note:"有田焼の器で楽しむ自然食カフェ。佐賀の農産物使用。",rating:4.3},
+  {name:"ホテルニューオータニ佐賀",type:"hotel",pref:"佐賀県",addr:"佐賀市駅前中央1丁目2-10",supported:["卵","乳製品","小麦","えび","かに","ハラール"],note:"佐賀駅近くの老舗ホテル。全レストランでアレルギー対応可。",rating:4.4},
+  {name:"吉野ヶ里遺跡前農家レストラン",type:"restaurant",pref:"佐賀県",addr:"神埼郡吉野ヶ里町田手1843",supported:["ビーガン","ベジタリアン","グルテンフリー","大豆フリー"],note:"弥生時代の史跡近くの農家レストラン。地元農産物100%使用。",rating:4.4},
+  {name:"嬉野温泉旅館 大正屋",type:"hotel",pref:"佐賀県",addr:"嬉野市嬉野町下宿乙2276",supported:["そばフリー","えびフリー","ビーガン","ベジタリアン"],note:"日本三大美肌の湯の老舗旅館。食事は全品アレルギー表示あり。",rating:4.7},
+  {name:"唐津くんち食堂 虹の松原",type:"restaurant",pref:"佐賀県",addr:"唐津市東唐津2丁目1",supported:["乳製品フリー","グルテンフリー","ビーガン"],note:"虹の松原のそばの食堂。唐津の食材を活かしたアレルギー対応食。",rating:4.1},
+
+  // 長崎県
+  {name:"長崎ちゃんぽん 無アレルギー亭",type:"restaurant",pref:"長崎県",addr:"長崎市江山町14-4",supported:["グルテンフリー","乳製品フリー","えびフリー","かにフリー"],note:"長崎名物をグルテンフリー・えびかに不使用で提供。",rating:4.1},
+  {name:"ホテルニッコー長崎グラバーヒル",type:"hotel",pref:"長崎県",addr:"長崎市片淵2丁目8-1",supported:["卵","乳製品","小麦","えび","かに","ハラール"],note:"グラバー園近くのホテル。全レストランでアレルギー対応可。",rating:4.5},
+  {name:"出島カフェ 蘭学亭",type:"restaurant",pref:"長崎県",addr:"長崎市出島町6-1",supported:["ビーガン","ベジタリアン","グルテンフリー","ナッツフリー"],note:"出島の歴史的雰囲気の中で楽しむビーガンカフェ。",rating:4.3},
+  {name:"雲仙温泉旅館 九州ホテル",type:"hotel",pref:"長崎県",addr:"雲仙市小浜町雲仙380",supported:["そばフリー","えびフリー","ビーガン","ベジタリアン"],note:"雲仙温泉の名旅館。食事は事前申告でアレルギー対応可。",rating:4.6},
+  {name:"五島うどん アレルギー配慮食堂",type:"restaurant",pref:"長崎県",addr:"五島市栄町1-1",supported:["卵フリー","乳製品フリー","グルテンフリー"],note:"五島名物の手延べうどんを米粉版で提供。",rating:4.0},
+
+  // 熊本県
+  {name:"熊本城下町ビーガン食堂 黒熊",type:"restaurant",pref:"熊本県",addr:"熊本市中央区上通町3-1",supported:["ビーガン","ベジタリアン","グルテンフリー","ナッツフリー"],note:"熊本城のそばのビーガン食堂。熊本の農産物を活かしたメニュー。",rating:4.3},
+  {name:"ホテル熊本テルサ",type:"hotel",pref:"熊本県",addr:"熊本市中央区本山4丁目2",supported:["卵","乳製品","小麦","えび","かに","ハラール"],note:"熊本の中心部のホテル。全レストランでアレルギー対応食を提供。",rating:4.4},
+  {name:"阿蘇山麓オーガニックカフェ",type:"restaurant",pref:"熊本県",addr:"阿蘇市内牧2409-2",supported:["ビーガン","ベジタリアン","グルテンフリー","卵フリー","乳製品フリー"],note:"阿蘇の大自然に囲まれたカフェ。地元農家直送食材のみ使用。",rating:4.6},
+  {name:"黒川温泉旅館 山みず木",type:"hotel",pref:"熊本県",addr:"阿蘇郡南小国町満願寺6790-1",supported:["そばフリー","えびフリー","ビーガン","ベジタリアン"],note:"九州の名湯黒川温泉の宿。食事は全品アレルギー表示あり。",rating:4.8},
+  {name:"天草コーラルビューレストラン",type:"restaurant",pref:"熊本県",addr:"天草市本渡町本渡2428",supported:["乳製品フリー","グルテンフリー","えびフリー"],note:"天草の海の幸中心。乳・小麦・えび不使用メニュー提供可。",rating:4.2},
+
+  // 大分県
+  {name:"別府温泉地獄蒸しカフェ",type:"restaurant",pref:"大分県",addr:"別府市鉄輪559-1",supported:["グルテンフリー","乳製品フリー","ビーガン"],note:"温泉の熱を使って蒸した地元食材の料理。アレルギー表示あり。",rating:4.3},
+  {name:"ホテルシーウェーブ別府",type:"hotel",pref:"大分県",addr:"別府市北浜3丁目8-3",supported:["卵","乳製品","小麦","えび","かに","ハラール"],note:"別府湾を望むホテル。全レストランでアレルギー対応可。",rating:4.4},
+  {name:"湯布院ビーガン旅館 萃萃",type:"hotel",pref:"大分県",addr:"由布市湯布院町川上1098-2",supported:["ビーガン","ベジタリアン","グルテンフリー","卵フリー","乳製品フリー"],note:"湯布院の自然の中のビーガン特化旅館。全食事が植物性。",rating:4.7},
+  {name:"由布岳カフェ 草花",type:"restaurant",pref:"大分県",addr:"由布市湯布院町川上1503",supported:["ビーガン","ベジタリアン","グルテンフリー","ナッツフリー"],note:"由布岳を望むカフェ。九州の農産物を活かしたビーガンメニュー。",rating:4.5},
+  {name:"耶馬渓山荘 青洞門",type:"hotel",pref:"大分県",addr:"中津市耶馬溪町柿坂1100",supported:["そばフリー","えびフリー","ビーガン","ベジタリアン"],note:"耶馬渓の絶景の中の山荘。食事はアレルギー対応可。",rating:4.5},
+
+  // 宮崎県
+  {name:"宮崎地鶏 アレルギー配慮食堂",type:"restaurant",pref:"宮崎県",addr:"宮崎市橘通東3丁目4-7",supported:["乳製品フリー","グルテンフリー","卵フリー"],note:"宮崎地鶏を使った料理。乳・小麦・卵不使用の定食あり。",rating:4.1},
+  {name:"ホテルメリージュ宮崎",type:"hotel",pref:"宮崎県",addr:"宮崎市橘通西4丁目3-4",supported:["卵","乳製品","小麦","えび","かに","ハラール"],note:"宮崎市中心部のホテル。全レストランでアレルギー対応可。",rating:4.3},
+  {name:"高千穂峡ビーガン食堂",type:"restaurant",pref:"宮崎県",addr:"西臼杵郡高千穂町三田井1099",supported:["ビーガン","ベジタリアン","グルテンフリー","ナッツフリー"],note:"神話の里高千穂のビーガン食堂。地元農産物を活かしたメニュー。",rating:4.5},
+  {name:"日南海岸リゾートホテル",type:"hotel",pref:"宮崎県",addr:"日南市大字恒吉乙4000番地",supported:["そばフリー","えびフリー","ビーガン","ベジタリアン"],note:"日南海岸の絶景のリゾート。食事は全品アレルギー表示あり。",rating:4.6},
+  {name:"青島自然食カフェ ヤシの木",type:"restaurant",pref:"宮崎県",addr:"宮崎市青島2丁目330",supported:["グルテンフリー","乳製品フリー","ビーガン","ベジタリアン"],note:"青島のそばのカフェ。宮崎の農産物を活かしたビーガン料理。",rating:4.2},
+
+  // 鹿児島県
+  {name:"鹿児島黒豚 無添加食堂",type:"restaurant",pref:"鹿児島県",addr:"鹿児島市東千石町2-14",supported:["乳製品フリー","グルテンフリー","卵フリー"],note:"鹿児島黒豚の専門店。乳・小麦不使用のシャブシャブコースあり。",rating:4.2},
+  {name:"ホテル京セラ鹿児島",type:"hotel",pref:"鹿児島県",addr:"鹿児島市城南町4-1",supported:["卵","乳製品","小麦","えび","かに","ハラール","ビーガン"],note:"鹿児島の中心部のホテル。全レストランでアレルギー対応可。",rating:4.5},
+  {name:"指宿砂むし温泉旅館 砂湯里",type:"hotel",pref:"鹿児島県",addr:"指宿市湯の浜5丁目25-18",supported:["そばフリー","えびフリー","ビーガン","ベジタリアン"],note:"指宿の名物砂風呂の旅館。食事は全品アレルギー表示あり。",rating:4.6},
+  {name:"屋久島ビーガン山小屋カフェ",type:"restaurant",pref:"鹿児島県",addr:"熊毛郡屋久島町宮之浦1593",supported:["ビーガン","ベジタリアン","グルテンフリー","ナッツフリー"],note:"世界遺産の島のビーガンカフェ。島の食材のみ使用。",rating:4.7},
+  {name:"桜島溶岩食堂",type:"restaurant",pref:"鹿児島県",addr:"鹿児島市桜島横山町1722-3",supported:["グルテンフリー","乳製品フリー","ビーガン"],note:"桜島を望む食堂。桜島大根など地元食材のメニュー。",rating:4.1},
+
+  // 沖縄県
+  {name:"那覇ビーガンカフェ 太陽",type:"restaurant",pref:"沖縄県",addr:"那覇市牧志2丁目3-24",supported:["ビーガン","ベジタリアン","卵フリー","乳製品フリー","魚フリー","えびフリー","かにフリー"],note:"沖縄野菜をふんだんに使ったビーガン料理。海外観光客にも人気。",rating:4.5},
+  {name:"ホテルオリオン沖縄",type:"hotel",pref:"沖縄県",addr:"那覇市久茂地3丁目2-11",supported:["卵","乳製品","小麦","えびフリー","かにフリー","そばフリー","ハラール","ビーガン"],note:"国際リゾートホテル。多言語でアレルギー対応可能。",rating:4.7},
+  {name:"石垣島自然食レストラン",type:"restaurant",pref:"沖縄県",addr:"石垣市登野城2-2",supported:["卵フリー","乳製品フリー","グルテンフリー","大豆フリー","ビーガン","ベジタリアン"],note:"島の食材のみ使用。アレルギーメニューは予約不要。",rating:4.6},
+  {name:"宮古島ビーチリゾート アクアヴィラ",type:"hotel",pref:"沖縄県",addr:"宮古島市上野字宮国775-1",supported:["そばフリー","えびフリー","ビーガン","ベジタリアン"],note:"宮古島の白砂ビーチのリゾート。食事は事前申告でアレルギー対応可。",rating:4.8},
+  {name:"沖縄そば 無グル亭",type:"restaurant",pref:"沖縄県",addr:"那覇市松尾2丁目12-17",supported:["グルテンフリー","乳製品フリー","卵フリー"],note:"沖縄そばを米粉麺で提供。グルテンフリーでも本格的な味。",rating:4.2},
+  {name:"首里城下町 琉球料理 守礼門",type:"restaurant",pref:"沖縄県",addr:"那覇市首里当蔵町2丁目1",supported:["乳製品フリー","グルテンフリー","ビーガン","ベジタリアン"],note:"琉球料理の専門店。豚肉不使用のビーガンコースあり。",rating:4.4}
+];
+
+let allResults = [];
+
+document.querySelectorAll('.allergen-btn').forEach(b=>b.addEventListener('click',()=>b.classList.toggle('active')));
+
+function doSearch(){
+  const pref=document.getElementById('prefecture').value;
+  if(!pref){alert('都道府県を選択してください');return;}
+  const facility=document.getElementById('facility').value;
+  let results=DB.filter(r=>r.pref===pref);
+  if(facility!=='both')results=results.filter(r=>r.type===facility);
+  allResults=results;
+  document.getElementById('results').style.display='block';
+  renderTabs(facility);
+  renderCards(allResults);
+  document.getElementById('resultLabel').textContent=allResults.length>0
+    ?`${pref} — ${allResults.length}件見つかりました`
+    :`${pref} — 条件に合う施設が見つかりませんでした`;
+}
+
+function renderTabs(facility){
+  const tabs=document.getElementById('typeTabs');
+  if(facility!=='both'){tabs.innerHTML='';return;}
+  const hasR=allResults.some(r=>r.type==='restaurant');
+  const hasH=allResults.some(r=>r.type==='hotel');
+  if(!hasR||!hasH){tabs.innerHTML='';return;}
+  tabs.innerHTML=`
+    <button class="type-tab active" onclick="filterTab('all',this)">すべて</button>
+    <button class="type-tab" onclick="filterTab('restaurant',this)">レストラン</button>
+    <button class="type-tab" onclick="filterTab('hotel',this)">ホテル</button>`;
+}
+
+function filterTab(type,el){
+  document.querySelectorAll('.type-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  const filtered=type==='all'?allResults:allResults.filter(r=>r.type===type);
+  renderCards(filtered);
+}
+
+function renderCards(items){
+  const cards=document.getElementById('cards');
+  if(!items.length){cards.innerHTML='<div class="empty">条件を変えてもう一度お試しください</div>';return;}
+  const sorted=[...items].sort((a,b)=>b.rating-a.rating);
+  cards.innerHTML=sorted.map(r=>{
+    const badge=r.type==='restaurant'
+      ?'<span class="type-badge badge-restaurant">レストラン</span>'
+      :'<span class="type-badge badge-hotel">ホテル</span>';
+    const tags=r.supported.map(s=>`<span class="atag">${s}</span>`).join('');
+    return `<div class="card">
+      <div class="card-top"><span class="card-name">${r.name}</span>${badge}</div>
+      <div class="card-addr">${r.addr}<span class="rating">★${r.rating.toFixed(1)}</span></div>
+      <div class="card-supported">${tags}</div>
+      <div class="card-note">${r.note}</div>
+    </div>`;
+  }).join('');
+}
+</script>
+</body>
+</html>
